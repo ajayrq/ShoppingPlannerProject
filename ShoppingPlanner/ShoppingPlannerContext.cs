@@ -9,20 +9,20 @@ namespace ShoppingPlanner.Data
     {
         public ShoppingPlannerContext(DbContextOptions<ShoppingPlannerContext> options) : base(options) { }
 
-        public DbSet<User> Users { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<Recipe> Recipes { get; set; }
-        public DbSet<FoodPlanner> FoodPlanners { get; set; }
         public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<RecipeIngredient>()
-                .HasKey(ri => new { ri.RecipeId, ri.IngredientId });
+            .HasKey(ri => ri.Id);
+
             modelBuilder.Entity<RecipeIngredient>()
-                .HasOne(ri => ri.Recipe)
-                .WithMany(r => r.RecipeIngredients)
-                .HasForeignKey(ri => ri.RecipeId);
+               .HasOne(ri => ri.Recipe)
+               .WithMany()
+               .HasForeignKey(ri => ri.RecipeId);
+
             modelBuilder.Entity<RecipeIngredient>()
                 .HasOne(ri => ri.Ingredient)
                 .WithMany()
