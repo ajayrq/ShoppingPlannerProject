@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ingredient and Recipe List</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .ingredient-list, .recipe-list, .shopping-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .ingredient-item, .recipe-item, .shopping-item {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .add-ingredient-form, .add-recipe-form {
+            margin-bottom: 20px;
+        }
+
+            .add-ingredient-form input, .add-recipe-form input {
+                margin-right: 10px;
+            }
+
+        .ingredient-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+            .ingredient-row input, .ingredient-row select {
+                margin-right: 10px;
+            }
+    </style>
+</head>
+<body>
+    <h1>Ingredient List</h1>
+
+    <div class="add-ingredient-form">
+        <input type="text" id="ingredientName" placeholder="Ingredient Name" required>
+        <input type="text" id="ingredientUnit" placeholder="Unit" required>
+        <button id="addIngredientButton">Add Ingredient</button>
+    </div>
+
+    <ul class="ingredient-list" id="ingredientList">
+    </ul>
+    <br /><br /><br />
+    <h1>Recipe List</h1>
+
+    <div class="add-recipe-form">
+        <input type="text" id="recipeName" placeholder="Recipe Name" required>
+        <div id="ingredientsContainer">
+            <div class="ingredient-row">
+                <input type="number" class="ingredientId" placeholder="Ingredient ID" required>
+                <input type="number" class="ingredientAmount" placeholder="Amount" required>
+                <button class="removeIngredientButton">Remove</button>
+            </div>
+        </div>
+        <button id="addIngredientRowButton">Add Ingredient Row</button>
+        <button id="addRecipeButton">Add Recipe</button>
+    </div>
+    <ul class="shopping-list" id="recipeList">
+    </ul>
+    <br /><br /><br />
+    <h1>Shopping List</h1>
+    <ul class="shopping-list" id="shoppingList">
+    </ul>
+
+    <script>
+        $(document).ready(function () {
+            function fetchIngredients() {
+                $.ajax({
+                    url: 'http://localhost:5202/api/Home/GetIngredients',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        var ingredientList = $('#ingredientList');
+                        ingredientList.empty();
+
+                        data.forEach(function (item) {
+                            var listItem = $('<li>').addClass('ingredient-item')
+                                .text(item.name + ' (' + item.unit + ')');
+                            ingredientList.append(listItem);
+                        });
+                    },
+                    error: function (error) {
+                        console.error('Error fetching data', error);
+                        var ingredientList = $('#ingredientList');
+                        ingredientList.append('<li class="ingredient-item">Error loading ingredients</li>');
+                    }
+                });
+            }
+
+            function fetchRecipes() {
+                $.ajax({
+                    url: 'http://localhost:5202/api/Home/GetRecipes',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        var recipeList = $('#recipeList');
+                        recipeList.empty();
+
+                        data.forEach(function (item) {
+                            var listItem = $('<li>').addClass('recipe-item')
+                                .text(item.name);
+                            recipeList.append(listItem);
+                        });
+                    },
+                    error: function (error) {
+                        console.error('Error fetching data', error);
+                        var recipeList = $('#recipeList');
+                        recipeList.append('<li class="recipe-item">Error loading recipes</li>');
+                    }
+                });
+            }
+
+            function fetchShoppingList() {
+                $.ajax({
+                    url: 'http://localhost:5202/api/Home/GetShoppingList',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        var shoppingList = $('#shoppingList');
+                        shoppingList.empty(); // Clear the list
+
+                        data.forEach(function (item) {
+                            var listItem = $('<li>').addClass('shopping-item')
+                                .text(item.ingredientName + ' (' + item.amount + ')');
+                            shoppingList.append(listItem);
+                        });
+                    },
+                    error: function (error) {
+                        console.error('Error fetching data', error);
+                        var shoppingList = $('#shoppingList');
+                        shoppingList.append('<li class="shopping-item">Error loading shopping list</li>');
+                    }
+                });
+            }
+
+            fetchIngredients();
+            fetchRecipes();
+            fetchShoppingList();
+
+            $('#addIngredientButton').click(function () {
+                var name = $('#ingredientName').val();
+                var unit = $('#ingredientUnit').val();
+
+                if (name && unit) {
+                    $.ajax({
+                        url: 'http://localhost:5202/api/Home/AddIngredient',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            name: name,
+                            unit: unit
+                        }),
+                        success: function () {
+                            $('#ingredientName').val('');
+                            $('#ingredientUnit').val('');
+                            fetchIngredients();
+                        },
+                        error: function (error) {
+                            console.error('Error adding ingredient', error);
+                            alert('Error adding ingredient');
+                        }
+                    });
+                } else {
+                    alert('Please enter both name and unit');
+                }
+            });
+
+            $('#addIngredientRowButton').click(function () {
+                var newRow = $('<div>').addClass('ingredient-row')
+                    .append($('<input>').attr('type', 'number').addClass('ingredientId').attr('placeholder', 'Ingredient ID').attr('required', true))
+                    .append($('<input>').attr('type', 'number').addClass('ingredientAmount').attr('placeholder', 'Amount').attr('required', true))
+                    .append($('<button>').addClass('removeIngredientButton').text('Remove'));
+
+                $('#ingredientsContainer').append(newRow);
+            });
+
+            $(document).on('click', '.removeIngredientButton', function () {
+                $(this).closest('.ingredient-row').remove();
+            });
+
+            $('#addRecipeButton').click(function () {
+                var recipeName = $('#recipeName').val();
+                var ingredients = [];
+
+                $('#ingredientsContainer .ingredient-row').each(function () {
+                    var ingredientId = $(this).find('.ingredientId').val();
+                    var ingredientAmount = $(this).find('.ingredientAmount').val();
+
+                    if (ingredientId && ingredientAmount) {
+                        ingredients.push({
+                            ingredientId: parseInt(ingredientId),
+                            amount: parseInt(ingredientAmount)
+                        });
+                    }
+                });
+
+                if (recipeName && ingredients.length > 0) {
+                    $.ajax({
+                        url: 'http://localhost:5202/api/Home/AddRecipe',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            recipeName: recipeName,
+                            ingredients: ingredients
+                        }),
+                        success: function () {
+                            $('#recipeName').val('');
+                            $('#ingredientsContainer').empty().append('<div class="ingredient-row"><input type="number" class="ingredientId" placeholder="Ingredient ID" required><input type="number" class="ingredientAmount" placeholder="Amount" required><button class="removeIngredientButton">Remove</button></div>');
+                            fetchIngredients();
+                            fetchRecipes();
+                            fetchShoppingList();
+                        },
+                        error: function (error) {
+                            console.error('Error adding recipe', error);
+                            alert('Error adding recipe');
+                        }
+                    });
+                } else {
+                    alert('Please enter recipe name and at least one ingredient with amount');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
