@@ -72,7 +72,7 @@
         $(document).ready(function () {
             function fetchIngredients() {
                 $.ajax({
-                    url: 'http://localhost:5202/api/Home/GetIngredients',
+                    url: 'https://localhost:5202/api/Home/GetIngredients',
                     type: 'GET',
                     dataType: 'json',
                     success: function (data) {
@@ -95,7 +95,7 @@
 
             function fetchRecipes() {
                 $.ajax({
-                    url: 'http://localhost:5202/api/Home/GetRecipes',
+                    url: 'https://localhost:5202/api/Home/GetRecipes',
                     type: 'GET',
                     dataType: 'json',
                     success: function (data) {
@@ -118,7 +118,7 @@
 
             function fetchShoppingList() {
                 $.ajax({
-                    url: 'http://localhost:5202/api/Home/GetShoppingList',
+                    url: 'https://localhost:5202/api/Home/GetShoppingList',
                     type: 'GET',
                     dataType: 'json',
                     success: function (data) {
@@ -149,7 +149,7 @@
 
                 if (name && unit) {
                     $.ajax({
-                        url: 'http://localhost:5202/api/Home/AddIngredient',
+                        url: 'https://localhost:5202/api/Home/AddIngredient',
                         type: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify({
@@ -202,7 +202,7 @@
 
                 if (recipeName && ingredients.length > 0) {
                     $.ajax({
-                        url: 'http://localhost:5202/api/Home/AddRecipe',
+                        url: 'https://localhost:5202/api/Home/AddRecipe',
                         type: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify({
